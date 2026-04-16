@@ -1,0 +1,8 @@
+Model Name,input,prediction
+LR-1,10,1018.0
+LR-1,20,2036.0
+LR-1,30,3054.0
+
+Decision,15,101.8
+Decision,25,101.8
+Decision,35,101.8

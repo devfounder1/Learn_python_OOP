@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+import csv
 
 class MLModel(ABC):
 
@@ -45,10 +46,12 @@ class Lineral_Regression(MLModel):
         super().__init__(name,'LiLineral_Regression')
         self.lr = lr
         self.coef = 0.0
+        self.accuracy = 0.2
     
     def train(self,data):
         self.coef = sum(data) / len(data) if data else 0 
         self._is_trained = True
+        self.accuracy = 0.7
         print(f"модель {self.name} обучена и готова")
 
     def predict(self,x):
@@ -59,15 +62,58 @@ class Descision_Tree(MLModel):
         super().__init__(name,'Descision_Tree')
         self.max_depth = max_depth
         self.tree_data = None
+        self.accuracy = 0.3
     
     def train(self,data): 
         self._is_trained = True
         self.tree_data = sum(data) / len(data) if data else 0
+        self.accuracy = 0.8
         print(f"модель {self.name} обучена и готова")
 
     def predict(self,x):
         return self.tree_data if self.tree_data else 0
     
+# task 4
+def Model_save_log(name, filename):
+    with  open(filename, "a", encoding="utf-8",newline='') as f:
+       writer = csv.DictWriter(f, fieldnames = ['name', 'accuracy', 'status']) 
+       writer.writeheader()
+       data = [{'name' : name.name,
+                'accuracy': name.accuracy,
+                'status': name._is_trained}]
+       
+       writer.writerows(data)
+
+def Load_model_logs(filename):
+    logs = []
+    with open(filename,"r" ,encoding="utf-8",newline='\n') as f:
+        reader = csv.DictReader(f)
+        for row in reader:  # ← Читаем каждую строку!
+            logs.append(row)
+    return logs
+
+def save_predictions(name,filename,data):
+    import os
+    
+    file_exists = os.path.exists(filename)
+    
+    with open(filename, 'a', encoding='utf-8', newline='') as f:
+        new = csv.DictWriter(f, fieldnames=['Model Name','input', 'prediction'])
+        
+        if file_exists and os.path.getsize(filename) > 0:
+            f.write('\n')
+
+        if not file_exists:
+            new.writeheader()
+
+        for x in data:
+            new.writerow({
+                'Model Name': name.name,
+                'input': x,
+                'prediction': name.predict(x)  # ← Предсказание для каждого x
+            })
+
+
 
 print(f"Всего моделей: {MLModel.get_total_models()}")
 
@@ -78,15 +124,25 @@ print(f"Всего моделей: {MLModel.get_total_models()}")
 
 ####### реализация для __str__ ########
 lr1 = Lineral_Regression("LR-1")
-print(lr1)
+
+Model_save_log(lr1,"Lineral Regression")
+logs = Load_model_logs("Lineral Regression")
+print(logs)
 
 lr1.train([1,3,4,5,76,899,4,23,1,2])
-print(lr1) 
+save_predictions(lr1,"predictions" ,[10,20,30])
+ 
+
+Model_save_log(Dt,"Descision Tree")
+logs = Load_model_logs("Descision Tree")
+print(logs)
+
+Dt.train([1,3,4,5,76,899,4,23,1,2])
+save_predictions(Dt,"predictions" ,[15,25,35])
+
 #######################################
 
 lr.train([1, 2, 3, 4, 5])
-
-Dt.train([1, 2, 3, 4, 5])
 
 print(lr.__dict__)  
 print(Dt.__dict__)
@@ -98,3 +154,5 @@ print(f"Accuracy LR: {lr.accuracy}")
 
 print(f"Предсказание LR(10): {lr.predict(10)}")
 print(f"Предсказание DT(10): {Dt.predict(10)}")
+
+
